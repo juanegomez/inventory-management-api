@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:15
+    container_name: inventory_db
+    env_file:
+      - .env
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4:7
+    container_name: pgadmin
+    env_file:
+      - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inventory_api
+    env_file:
+      - .env
+    ports:
+      - "${PORT}:3000"
+    depends_on:
+      - db
+    command: sh -c "npm install && npm run dev"
+
+volumes:
+  pgdata:
